@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Transporte Público de São Gabriel - RS</title>
+  <link rel="stylesheet" href="https://openlayers.org/en/v6.9.0/css/ol.css" type="text/css">
+  <script src="https://openlayers.org/en/v6.9.0/build/ol.js"></script>
+  <style>
+    #map{ height: 600px;}
+  </style>
+</head>
+
+<body>
+  <div id = "map" class = "map"></div>
+  <script>
+    var raster = new ol.layer.Tile({
+      source: new ol.source.OSM()
+    });
+
+    var styleFunction = function (feature) {
+      var geometry = feature.getGeometry();
+      var styles = [
+        new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: '#dd1166',
+            width: 2
+          })
+        })
+      ];
+
+      geometry.forEachSegment(function (start, end) {
+        var dx = end[0] - start[0];
+        var dy = end[1] - start[1];
+        var rotation = Math.atan2(dy, dx);
+
+        styles.push(new ol.style.Style({
+          geometry: new ol.geom.Point(end),
+          image: new ol.style.Icon({
+            color: '#dd1166',
+            crossOrigin: 'anonymous',
+            src: 'data/arrow.svg',
+            anchor: [0.75, 0.5],
+            rotateWithView: true,
+            rotation: -rotation,
+            scale: 0.5,
+          })
+        }));
+      });
+      return styles;
+    };
+
+    var mygeojson = new ol.layer.Vector({
+      source: new ol.source.Vector({
+        format: new ol.format.GeoJSON(),
+        url: 'data/bf_cn.json'
+      }),
+      style: styleFunction,
+    });
+
+    var map = new ol.Map({
+      layers: [raster, mygeojson],
+      target: 'map',
+      view: new ol.View({
+        center: ol.proj.fromLonLat([-54.3, -30.35]),
+        zoom: 13,
+      })
+    });
+  </script>
+</body>
+
+</html>
